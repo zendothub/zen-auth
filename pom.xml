@@ -101,5 +101,10 @@
             </plugin>
         </plugins>
     </build>
-
+    <distributionManagement>
+        <repository>
+            <id>zen-auth</id>
+            <url>https://maven.pkg.github.com/zendothub/zen-auth</url>
+        </repository>
+    </distributionManagement>
 </project>
