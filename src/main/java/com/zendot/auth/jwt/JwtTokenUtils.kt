@@ -11,14 +11,13 @@ import java.util.*
 import javax.crypto.spec.SecretKeySpec
 
 @Component
-class JwtOtpTokenUtils(
+class JwtTokenUtils(
     @Value("\${interkashi.jwt.lifetime}") val jwtLifeDuration: Long,
     @Value("\${interkashi.refreshToken.lifetime}") val refreshTokenLifeDuration: Long,
     @Value("\${interkashi.jwt.secret}") val secretKey: String,
     @Value("\${interkashi.refreshToken.secret}") val refreshTokenSecretKey: String
 
 ) {
-
     fun generateOtpToken(user: ZenUser): String = Jwts.builder()
         .claim("id",user.id)
         .setId(UUID.randomUUID().toString())
@@ -40,7 +39,7 @@ class JwtOtpTokenUtils(
         "HmacSHA256"
     )
 
-    fun parseOtpToken(jwtString: String): Jws<Claims> {
+    fun parseToken(jwtString: String): Jws<Claims> {
         return Jwts.parser()
             .verifyWith(getOtpKey())
             .build()
