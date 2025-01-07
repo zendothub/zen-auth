@@ -10,28 +10,31 @@ import java.time.Instant
 import java.util.*
 import javax.crypto.spec.SecretKeySpec
 
+/**
+ * provide function for generating token
+ */
 @Component
 class JwtTokenUtils(
-    @Value("\${interkashi.jwt.lifetime}") val jwtLifeDuration: Long,
-    @Value("\${interkashi.refreshToken.lifetime}") val refreshTokenLifeDuration: Long,
-    @Value("\${interkashi.jwt.secret}") val secretKey: String,
-    @Value("\${interkashi.refreshToken.secret}") val refreshTokenSecretKey: String
+    @Value("\${jwt.lifetime}") val jwtLifeDuration: Long,
+    @Value("\${refreshToken.lifetime}") val refreshTokenLifeDuration: Long,
+    @Value("\${jwt.secret}") val secretKey: String,
+    @Value("\${refreshToken.secret}") val refreshTokenSecretKey: String
 
 ) {
-    fun generateOtpToken(user: ZenUser): String = Jwts.builder()
+    fun generateToken(user: ZenUser): String = Jwts.builder()
         .claim("id",user.id)
         .setId(UUID.randomUUID().toString())
         .setIssuedAt(Date())
         .setExpiration(Date.from(Instant.now().plusSeconds(jwtLifeDuration)))      .signWith(getOtpKey())
         .compact()
 
-    fun generateRefreshOtpToken(user: ZenUser): String = Jwts.builder()
+    fun generateRefreshToken(user: ZenUser): String = Jwts.builder()
         .claim("type", "Refresh Token")
         .subject(user.id)
         .id(UUID.randomUUID().toString())
         .issuedAt(Date())
         .expiration(Date.from(Instant.now().plusSeconds(refreshTokenLifeDuration)))
-        .signWith(getRefreshOtpTokenKey())
+        .signWith(getRefreshTokenKey())
         .compact()
 
     fun getOtpKey() = SecretKeySpec(
@@ -46,14 +49,14 @@ class JwtTokenUtils(
             .parseSignedClaims(jwtString)
     }
 
-    fun parseRefreshOtpToken(jwtString: String): Jws<Claims> {
+    fun parseRefreshToken(jwtString: String): Jws<Claims> {
         return Jwts.parser()
-            .verifyWith(getRefreshOtpTokenKey())
+            .verifyWith(getRefreshTokenKey())
             .build()
             .parseSignedClaims(jwtString)
     }
 
-    private fun getRefreshOtpTokenKey() = SecretKeySpec(
+    private fun getRefreshTokenKey() = SecretKeySpec(
         Base64.getDecoder().decode(refreshTokenSecretKey),
         "HmacSHA256"
     )
